@@ -1,5 +1,3 @@
-"""lips.face on the wire: the contract with every client that decodes it."""
-
 import struct
 
 import numpy as np

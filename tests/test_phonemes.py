@@ -1,5 +1,3 @@
-"""Visemes from a voice's phoneme timings."""
-
 import numpy as np
 
 from huri_events_lips import ARKIT_INDEX, N_VISEMES
@@ -50,10 +48,8 @@ def test_frames_follow_the_phonemes_a_little_ahead():
     assert v.shape == (18, N_VISEMES)
     np.testing.assert_allclose(v.sum(axis=1), 1.0, atol=1e-5)
     assert v[0].argmax() == V["sil"]
-    # The lips close on "b" (0.10-0.20 s, shown 40 ms early), fully.
     assert v[4, V["PP"]] > 0.8
     assert v[10].argmax() == V["aa"]
-    # 40 ms ahead: at 0.5 s the mouth is already closing for the pause.
     assert v[15, V["sil"]] > v[15, V["aa"]]
 
 

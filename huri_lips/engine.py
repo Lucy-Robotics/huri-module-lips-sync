@@ -1,18 +1,3 @@
-"""The model behind `lips`, on a GPU or a CPU.
-
-Two backends compute the same thing, LAM-A2E on a batch of windows:
-
-- **torch**: PyTorch on CUDA (NVIDIA), ROCm (AMD, also "cuda" to torch) or
-  the CPU. Needs torch and transformers; the weights are downloaded once
-  (`python -m huri_lips fetch`).
-- **onnx**: onnxruntime on the CPU, from an ONNX export of the same weights
-  (`python -m huri_lips export-onnx`, which needs torch once), with int8
-  weights by default: 145 MB instead of 400, and faster than torch on a CPU.
-
-`backend="auto"` takes torch on a GPU when there is one, else ONNX when its
-export is there, else torch on the CPU.
-"""
-
 import os
 from pathlib import Path
 from typing import Optional
@@ -30,8 +15,6 @@ from huri_lips.config import (
 
 
 class Engine:
-    """(k, WINDOW_SAMPLES) float32 windows -> (k, WINDOW_FRAMES, 52) weights."""
-
     name = "engine"
 
     def __call__(self, windows: np.ndarray) -> np.ndarray:
@@ -97,7 +80,6 @@ class OnnxEngine(Engine):
 
 
 def onnx_path() -> Path:
-    """The ONNX export to load: the int8 one if there, else the float32 one."""
     int8 = models_dir() / ONNX_INT8_FILE
     return int8 if int8.exists() else models_dir() / ONNX_FILE
 
@@ -118,7 +100,6 @@ def load_engine(
     threads: int = 0,
     half: bool = False,
 ) -> Engine:
-    """The engine for `backend` ("auto", "torch" or "onnx")."""
     onnx = Path(onnx) if onnx else onnx_path()
     if backend == "auto":
         if device not in (None, "cpu") or (device is None and _gpu()):

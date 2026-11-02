@@ -1,5 +1,3 @@
-"""The windows and post-processing, with the model replaced by fakes."""
-
 import numpy as np
 import pytest
 
@@ -11,13 +9,10 @@ JAW = ARKIT_INDEX["jawOpen"]
 
 
 def raw(**args):
-    """No post-processing: what the windows give, as they give it."""
     return Smoother(silence_rms=-1, blend=0, savgol=0, symmetric=False, **args)
 
 
 class FrameClock:
-    """Each window frame's weights tell which window frame it is (0..63)."""
-
     def __init__(self):
         self.calls = []
 
@@ -35,11 +30,10 @@ def speech(seconds, level=0.1):
 def test_frames_come_hop_at_a_time_once_the_lookahead_is_heard():
     model = FrameClock()
     stream = LipStream(model, hop=15, lookahead=6, smoother=raw())
-    assert stream.push(speech(0.6)) == []  # 18 frames < 15 + 6
-    (first,) = stream.push(speech(0.1))  # 21 frames
+    assert stream.push(speech(0.6)) == []
+    (first,) = stream.push(speech(0.1))
     start, frames = first
     assert start == 0 and frames.shape == (15, N_SHAPES)
-    # The window ends 6 frames after them: they are its frames 43..57.
     np.testing.assert_allclose(frames[:, JAW], np.arange(43, 58) / 100)
 
 
@@ -48,14 +42,14 @@ def test_flush_emits_the_rest_and_resets():
     out = stream.push(speech(1.0)) + stream.flush()
     starts = [s for s, _ in out]
     assert starts == [0, 15]
-    assert sum(f.shape[0] for _, f in out) == 30  # every frame of 1 s, once
+    assert sum(f.shape[0] for _, f in out) == 30
     assert stream.audio.size == 0 and stream.emitted == 0
 
 
 def test_an_utterance_gets_ceil_of_its_frames():
     stream = LipStream(FrameClock(), smoother=raw())
     out = stream.push(speech(0.71)) + stream.flush()
-    assert sum(f.shape[0] for _, f in out) == 22  # 21.3 frames -> 22
+    assert sum(f.shape[0] for _, f in out) == 22
 
 
 def test_windows_hold_the_audio_they_end_with():
@@ -65,7 +59,7 @@ def test_windows_hold_the_audio_they_end_with():
     (window,) = stream.windows([45])
     end = frame_sample(45 + 15 + 6)
     np.testing.assert_array_equal(window, audio[end - WINDOW_SAMPLES : end])
-    (first,) = stream.windows([0])  # before the utterance: silence
+    (first,) = stream.windows([0])
     assert not first[: WINDOW_SAMPLES - frame_sample(21)].any()
 
 
@@ -73,7 +67,7 @@ def test_long_audio_is_inferred_in_batches():
     model = FrameClock()
     stream = LipStream(model, max_batch=3, smoother=raw())
     stream.push(speech(5.0))
-    assert model.calls == [3, 3, 3]  # 9 windows of 15 frames ready
+    assert model.calls == [3, 3, 3]
 
 
 def test_emit_refuses_windows_out_of_order():
@@ -89,10 +83,10 @@ def test_the_mouth_closes_in_silence():
     stream = LipStream(open_mouth, smoother=Smoother(savgol=0))
     audio = np.concatenate([speech(1.0), np.zeros(SAMPLE_RATE, np.float32)])
     frames = np.concatenate([f for _, f in stream.push(audio) + stream.flush()])
-    assert frames[10:25, JAW].min() > 0.5  # speaking
-    assert frames[40:, JAW].max() < 0.1  # silent
+    assert frames[10:25, JAW].min() > 0.5
+    assert frames[40:, JAW].max() < 0.1
     eye = ARKIT_INDEX["eyeBlinkLeft"]
-    assert frames[40:, eye].min() > 0.5  # only the mouth shapes close
+    assert frames[40:, eye].min() > 0.5
 
 
 def test_left_and_right_are_made_alike_but_not_the_gaze():

@@ -1,20 +1,7 @@
-"""LAM-A2E, speech to ARKit blend shapes, in PyTorch.
-
-The network of LAM Audio2Expression (Alibaba 3DAIGC, Apache-2.0,
+"""The network of LAM Audio2Expression (Alibaba 3DAIGC, Apache-2.0,
 https://github.com/aigc3d/LAM_Audio2Expression), written again for inference
 only so that its published weights (3DAIGC/LAM_audio2exp on Hugging Face,
-"streaming") load as they are:
-
-    16 kHz audio ──> wav2vec 2.0 base (features resampled to 30 fps)
-                 ──> 768 -> 512 projection
-                 ──> identity (speaking style, one of 12) + 3 conv blocks
-                 ──> 3 conv blocks ──> 52 ARKit weights (sigmoid)
-
-The streaming model is used on windows of WINDOW_FRAMES frames (64, 2.13 s):
-the frames at the end of a window are the fresh ones (see huri_lips.stream).
-
-Import this only where torch is wanted (the deployment, the ONNX export).
-"""
+"streaming") load as they are."""
 
 import os
 import tarfile
@@ -62,8 +49,6 @@ _WAV2VEC2 = dict(
 
 
 class _ConvNormRelu(nn.Module):
-    """Conv1d (kernel 3) -> LayerNorm over channels [+ residual] -> ReLU."""
-
     def __init__(self, c_in: int, c_out: int, residual: bool = False):
         super().__init__()
         self.conv = nn.Conv1d(c_in, c_out, kernel_size=3, stride=1, padding=1)
@@ -101,19 +86,12 @@ class _IdentityEncoder(nn.Module):
         self.first_net = _SeqTranslator(hidden + identity_dim, hidden, layers=3)
 
     def forward(self, features: torch.Tensor, identity: torch.Tensor) -> torch.Tensor:
-        # features (B, C, T); identity (B, identities), one-hot
         ident = identity.to(features.dtype).unsqueeze(-1)
         ident = self.id_mlp(ident.expand(-1, -1, features.shape[2]))
         return self.first_net(torch.cat([features, ident], dim=1))
 
 
 class LamA2E(nn.Module):
-    """LAM Audio2Expression: (B, samples) 16 kHz audio -> (B, frames, 52).
-
-    `frames` is the number of 30 fps frames the audio spans (64 for a
-    streaming window of WINDOW_SAMPLES).
-    """
-
     def __init__(self, hidden: int = 512):
         super().__init__()
         from transformers import Wav2Vec2Config, Wav2Vec2Model
@@ -132,13 +110,13 @@ class LamA2E(nn.Module):
         self, audio: torch.Tensor, identity: torch.Tensor, frames: int = WINDOW_FRAMES
     ) -> torch.Tensor:
         enc = self.audio_encoder
-        hidden = enc.feature_extractor(audio).transpose(1, 2)  # (B, T50, 512)
+        hidden = enc.feature_extractor(audio).transpose(1, 2)
         hidden = F.interpolate(
             hidden.transpose(1, 2), size=frames, mode="linear", align_corners=True
         ).transpose(1, 2)
         hidden = enc.feature_projection(hidden)[0]
-        hidden = enc.encoder(hidden).last_hidden_state  # (B, frames, 768)
-        x = self.feature_projection(hidden).transpose(1, 2)  # (B, 512, frames)
+        hidden = enc.encoder(hidden).last_hidden_state
+        x = self.feature_projection(hidden).transpose(1, 2)
         x = self.identity_encoder(x, identity)
         x = self.decoder[0](x).transpose(1, 2)
         return torch.sigmoid(self.output_proj(x))
@@ -152,8 +130,6 @@ def one_hot_identity(identity: int, batch: int = 1) -> torch.Tensor:
 
 # --- weights -----------------------------------------------------------------
 
-# In LAM's checkpoint but not used for inference (CTC head, masking, a GRU
-# its forward never calls).
 _UNUSED = (
     "audio_encoder.lm_head.",
     "identity_encoder.grus.",
@@ -161,7 +137,6 @@ _UNUSED = (
 
 
 def _rename(state: Dict[str, torch.Tensor], model: LamA2E) -> Dict[str, torch.Tensor]:
-    """LAM's keys (`backbone.` prefix, legacy weight norm) to this model's."""
     own = model.state_dict()
     out = {}
     for key, value in state.items():
@@ -179,7 +154,6 @@ def _rename(state: Dict[str, torch.Tensor], model: LamA2E) -> Dict[str, torch.Te
 
 
 def _load_into(model: LamA2E, state: Dict[str, torch.Tensor]) -> LamA2E:
-    """Load LAM's state dict into `model`; every weight it needs must be there."""
     state = state.get("state_dict", state)
     missing, unexpected = model.load_state_dict(_rename(state, model), strict=False)
     # masked_spec_embed only serves training-time masking.
@@ -193,15 +167,12 @@ def _load_into(model: LamA2E, state: Dict[str, torch.Tensor]) -> LamA2E:
 
 
 def load_model(checkpoint: Optional[os.PathLike] = None, device: str = "cpu") -> LamA2E:
-    """The model with LAM's weights, in eval mode on `device`."""
     path = Path(checkpoint) if checkpoint else fetch_checkpoint()
     state = torch.load(path, map_location="cpu", weights_only=True)
     return _load_into(LamA2E(), state).eval().to(device)
 
 
 def fetch_checkpoint(dest: Optional[Path] = None) -> Path:
-    """LAM's streaming weights, downloaded once (373 MB) and kept, slimmed, as
-    a plain state dict (`lam_a2e_streaming.pt`, in models_dir())."""
     dest = dest or models_dir()
     path = dest / CHECKPOINT
     if path.exists():
@@ -215,9 +186,6 @@ def fetch_checkpoint(dest: Optional[Path] = None) -> Path:
 
 
 def import_checkpoint(source: Path, dest: Optional[Path] = None) -> Path:
-    """Keep LAM's weights from `source`: the Hugging Face archive
-    (LAM_audio2exp_streaming.tar) or the checkpoint inside it
-    (pretrained_models/lam_audio2exp_streaming.tar)."""
     dest = dest or models_dir()
     dest.mkdir(parents=True, exist_ok=True)
     path = dest / CHECKPOINT
@@ -249,8 +217,6 @@ def import_checkpoint(source: Path, dest: Optional[Path] = None) -> Path:
 
 
 class _Exported(nn.Module):
-    """The window model as ONNX sees it: (k, WINDOW_SAMPLES), (k, 12) -> (k, 64, 52)."""
-
     def __init__(self, model: LamA2E):
         super().__init__()
         self.model = model
@@ -260,7 +226,6 @@ class _Exported(nn.Module):
 
 
 def export_onnx(out: Path, checkpoint: Optional[os.PathLike] = None) -> Path:
-    """Export the streaming window model to ONNX (opset 17), batch dynamic."""
     from huri_lips.config import WINDOW_SAMPLES
 
     model = load_model(checkpoint, "cpu")

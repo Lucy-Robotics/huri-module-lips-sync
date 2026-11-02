@@ -1,5 +1,3 @@
-"""The `lips` module, with LAM replaced by a fake deployment."""
-
 import asyncio
 
 import numpy as np
@@ -12,13 +10,11 @@ from huri_events_lips import ARKIT_INDEX, N_SHAPES, FaceWeights
 from huri_lips.config import WINDOW_FRAMES
 from huri_lips.module import Lips
 
-SR = 22050  # Piper's voices
+SR = 22050
 JAW = ARKIT_INDEX["jawOpen"]
 
 
 class FakeLam:
-    """Half-open mouth everywhere."""
-
     def __init__(self):
         self.batches = []
 
@@ -39,7 +35,7 @@ def end_marker(pts):
 
 def lips(**args):
     lam = FakeLam()
-    args.setdefault("delay_s", 0.0)  # frames where LAM puts them
+    args.setdefault("delay_s", 0.0)
     return lam, ModuleHarness(Lips, handle=LocalHandle(lam), **args)
 
 
@@ -52,7 +48,6 @@ def test_an_utterance_gets_all_its_frames_on_the_voice_timeline():
     faces = harness.run(voice(1.0, 0.0), voice(1.0, 1.0), end_marker(2.0))
     assert all(isinstance(f, FaceWeights) and f.fps == 30 for f in faces)
     assert frames_of(faces) == 60
-    # Contiguous: each batch starts where the previous ended.
     t = 0.0
     for face in faces:
         assert abs(face.pts - t) < 1e-9
@@ -61,7 +56,6 @@ def test_an_utterance_gets_all_its_frames_on_the_voice_timeline():
 
 
 def test_frames_follow_the_utterance_pts():
-    """The thinking phrases and the answer both start at their own pts."""
     lam, harness = lips()
     faces = harness.run(voice(0.5, 3.0), end_marker(3.5))
     assert faces[0].pts == 3.0
@@ -69,12 +63,11 @@ def test_frames_follow_the_utterance_pts():
 
 
 def test_frames_are_shown_later_than_lam_puts_them():
-    """LAM's mouth leads the voice: `delay_s` moves the frames' pts."""
     lam, harness = lips(delay_s=0.13)
     faces = harness.run(voice(0.5, 3.0), end_marker(3.5))
     assert abs(faces[0].pts - 3.13) < 1e-9
     assert frames_of(faces) == 15
-    assert abs(Lips.__init__.__defaults__[-1] - 0.13) < 1e-9  # the default
+    assert abs(Lips.__init__.__defaults__[-1] - 0.13) < 1e-9
 
 
 def test_the_end_resets_for_the_next_utterance():
@@ -93,9 +86,8 @@ def test_the_end_resets_for_the_next_utterance():
 def test_a_gap_in_the_voice_is_silence():
     lam, harness = lips()
     faces = harness.run(voice(0.5, 0.0), voice(0.5, 1.0), end_marker(1.5))
-    assert frames_of(faces) == 45  # 1.5 s, the gap included
+    assert frames_of(faces) == 45
     weights = np.concatenate([f.weights for f in faces])
-    # The mouth closes in the gap (frames 15-30), after easing into it.
     assert weights[21:28, JAW].max() < 0.1
     assert weights[33:, JAW].min() > 0.3
 

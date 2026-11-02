@@ -1,16 +1,3 @@
-"""The lips module's model, from the command line.
-
-    python -m huri_lips fetch [--from FILE]       # LAM's weights (373 MB, once)
-    python -m huri_lips export-onnx [--precision int8|fp32|both]
-    python -m huri_lips run speech.wav [-o face.json] [--backend auto|torch|onnx]
-    python -m huri_lips bench [--backend ...] [--seconds 10]
-    python -m huri_lips patch-voice VOICE.onnx
-
-Weights and exports go to $HURI_LIPS_HOME (default ~/.cache/huri-lips).
-`run` streams a WAV file through the module's windows and writes the ARKit
-weights as JSON: {"fps", "names": [52], "frames": [[52], ...]}.
-"""
-
 import argparse
 import json
 import sys
@@ -82,7 +69,7 @@ def _run(args) -> None:
     audio = to_16k(samples, rate)
     started = time.perf_counter()
     out = []
-    for i in range(0, audio.size, 16000):  # 1 s at a time, like a TTS
+    for i in range(0, audio.size, 16000):
         out += stream.push(audio[i : i + 16000])
     out += stream.flush()
     took = time.perf_counter() - started

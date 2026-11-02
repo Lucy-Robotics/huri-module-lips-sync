@@ -1,11 +1,3 @@
-"""Events of the HuRI lips module.
-
-`lips.face` carries the face of the voice: ARKit blend shape weights, frame by
-frame, on the timeline of the `huri.audio.out` utterance they were computed
-from (`pts` is the same clock as `Audio.pts`). A client plays frame `i` when
-the voice reaches `pts + i / fps`.
-"""
-
 import struct
 from dataclasses import dataclass
 from typing import Dict, Optional
@@ -91,7 +83,7 @@ VISEME_NAMES = (
 VISEME_INDEX: Dict[str, int] = {name: i for i, name in enumerate(VISEME_NAMES)}
 N_VISEMES = len(VISEME_NAMES)
 
-_HEADER = struct.Struct(">dII")  # pts (f64), fps (u32), frame count (u32)
+_HEADER = struct.Struct(">dII")
 
 
 @dataclass
@@ -104,7 +96,7 @@ class FaceWeights(EventData[bytes]):
     optionally, n x 15 viseme weights in VISEME_NAMES order.
     """
 
-    weights: np.ndarray  # (n, 52) float32, ARKIT_NAMES order
+    weights: np.ndarray
     fps: int = 30
     pts: float = 0.0
     visemes: Optional[np.ndarray] = None
@@ -123,7 +115,6 @@ class FaceWeights(EventData[bytes]):
         return int(self.weights.shape[0])
 
     def shape(self, name: str) -> np.ndarray:
-        """One blend shape's weights over the frames."""
         return self.weights[:, ARKIT_INDEX[name]]
 
     def to_wire(self) -> bytes:
