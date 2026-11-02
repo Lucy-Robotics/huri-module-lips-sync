@@ -1,0 +1,20 @@
+huri-module-lips-sync is licensed under the GNU General Public License v3
+(see LICENSE).
+
+This module runs LAM Audio2Expression (LAM-A2E):
+
+  LAM Audio2Expression, Copyright 2024-2025 The Alibaba 3DAIGC Team Authors.
+  Licensed under the Apache License, Version 2.0.
+  https://github.com/aigc3d/LAM_Audio2Expression
+
+  - huri_lips/lam.py re-implements its network (models/network.py) for
+    inference, so that its published weights load unchanged;
+  - huri_lips/stream.py follows its streaming inference and post-processing
+    (engines/infer.py, models/utils.py): windows of 64 frames, the mouth
+    closed in silence, frame blending, Savitzky-Golay smoothing, symmetry.
+
+  Its weights, 3DAIGC/LAM_audio2exp on Hugging Face (Apache-2.0), are
+  downloaded by `python -m huri_lips fetch`; they are not distributed here.
+
+  Its audio encoder is wav2vec 2.0 base (facebook/wav2vec2-base-960h, Meta,
+  Apache-2.0), whose fine-tuned weights are part of LAM's.

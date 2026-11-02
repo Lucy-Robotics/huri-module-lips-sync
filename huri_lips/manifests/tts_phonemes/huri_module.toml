@@ -1,0 +1,7 @@
+name = "tts_phonemes"
+summary = "Piper text to speech whose audio carries its phoneme timings, for exact lip sync"
+input = { topic = "huri.token", event = "huri_events.text:Token" }
+output = { topic = "huri.audio.out", event = "huri_events.audio:Audio" }
+events = ["huri-events>=0.1,<0.3"]
+requires = { gpu = false, actuation = false }
+huri_core = ">=0.4,<0.5"

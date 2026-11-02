@@ -1,0 +1,9 @@
+# Exact pins for AMD/ROCm machines. torch itself comes from AMD's wheels,
+# which huri-modules' installer adds first; outside it, install it from
+# https://download.pytorch.org/whl/rocm6.4 before this file.
+transformers==4.46.3
+onnx==1.22.0
+onnxruntime==1.31.1; python_version >= "3.11"
+onnxruntime==1.23.2; python_version < "3.11"
+scipy>=1.11
+numpy==1.26.4

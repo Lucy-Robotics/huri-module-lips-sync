@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# The HuRI refs this module is built and tested against: a release tag of each
+# repository, a compatible pair (huri-modules' versions.env names the core
+# release it was tested with). Not "dev": huri-core's dev is the next minor
+# (0.5.0.dev0), which the released huri-events refuses.
+env:
+  HURI_CORE_REF: "0.4.0"
+  HURI_MODULES_REF: "0.1.1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: HuRI core and curated events, pinned
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            "huri-core[server] @ git+https://github.com/Lucy-Robotics/huri-core.git@${HURI_CORE_REF}" \
+            "huri-events @ git+https://github.com/Lucy-Robotics/huri-modules.git@${HURI_MODULES_REF}#subdirectory=packages/huri-events"
+      - run: ./install.sh --variant cpu --no-models
+      - name: style
+        run: |
+          black --check .
+          isort --check-only .
+          flake8
+      - run: pytest -q
