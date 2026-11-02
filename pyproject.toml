@@ -10,9 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "huri-core[server]>=0.4,<0.5",
-  "huri-events>=0.1,<0.3",          # the curated events it consumes (huri.audio.out)
-  # The events it introduces (events/): on no package index, so installed
-  # together with the module, from the same checkout or tag (see the README).
+  "huri-events>=0.1,<0.3",
   "huri-events-lips>=0.1,<0.2",
   "numpy>=1.26",
   "scipy>=1.11",
@@ -29,11 +27,8 @@ Repository = "https://github.com/Lucy-Robotics/huri-module-lips-sync"
 Issues = "https://github.com/Lucy-Robotics/huri-module-lips-sync/issues"
 
 [project.optional-dependencies]
-# flake8-pyproject: flake8 alone does not read [tool.flake8] below.
 dev = ["pytest>=8", "black>=24", "isort>=5", "flake8>=7", "flake8-pyproject>=1.2"]
 
-# How HuRI finds the module: once installed, `name: lips` works in a client's
-# YAML (and the server's HURI_MODULES).
 [project.entry-points."huri.modules"]
 lips = "huri_lips.module:Lips"
 tts_phonemes = "huri_lips.tts:PhonemeTTS"

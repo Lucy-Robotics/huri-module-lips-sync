@@ -48,22 +48,6 @@ class LipsHandle:
 
 
 class Lips(ModuleWithHandle):
-    """Lip sync: ARKit blend shapes from the voice.
-
-    input: huri.audio.out (Audio)
-    output: lips.face (FaceWeights)
-
-    :hop_frames: frames per window (15: 0.5 s).
-    :lookahead_frames: audio past the frames each window hears (6: 0.2 s).
-    :max_batch: most windows per model call.
-    :silence_rms: quieter frames are silence (mouth closed after 7 of them).
-    :smooth_frames: Savitzky-Golay window, odd (0: none). LAM's 5 frames
-        smooth away quick closures ("p", "b", "m": 98% -> 81% closed).
-    :symmetric: same weight for left and right shapes.
-    :delay_s: how much later than LAM puts them the frames are shown (see the
-        README).
-    """
-
     _handle_cls = LipsHandle
     input_type = "huri.audio.out"
     output_type = "lips.face"

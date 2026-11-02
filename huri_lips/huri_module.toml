@@ -1,5 +1,3 @@
-# What the module is, readable without importing it (HuRI's startup check and
-# the hub use it). Keep it in step with the module class.
 name = "lips"
 summary = "Lip sync: ARKit blend shapes in step with the voice (LAM Audio2Expression), GPU or CPU"
 input = { topic = "huri.audio.out", event = "huri_events.audio:Audio" }

@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# Installs this module with the dependency variant that matches the machine:
-# requirements-nvidia.txt on NVIDIA, requirements-amd.txt on ROCm, else
-# requirements-cpu.txt; then its events (events/) and the module itself; then
-# the model: LAM's weights (373 MB download, once) and, on a CPU, their int8
-# ONNX export (145 MB), in $HURI_LIPS_HOME (default ~/.cache/huri-lips).
-#
-#   ./install.sh                     # probe the hardware
-#   ./install.sh --variant cpu       # or choose: cpu, nvidia or amd
-#   ./install.sh --no-models         # packages only (CI, offline machines)
-#
-# Installs with $PIP if set, else `python -m pip`, else `uv pip` (a virtualenv
-# made by uv has no pip).
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
@@ -74,7 +62,6 @@ else
   echo "no pip: run in a virtualenv with pip, or install uv, or set PIP" >&2
   exit 1
 fi
-# A pin file with nothing but comments has nothing to install.
 if grep -qvE '^\s*(#|$)' "$pins"; then
   $pip install -r "$pins"
 fi
