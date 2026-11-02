@@ -4,6 +4,7 @@
 # https://download.pytorch.org/whl/rocm6.4 before this file.
 transformers==4.46.3  # compatible with the ROCm torch 2.8 wheel
 onnx==1.22.0
-onnxruntime==1.31.1
+onnxruntime==1.31.1; python_version >= "3.11"
+onnxruntime==1.23.2; python_version < "3.11"
 scipy>=1.11
 numpy==1.26.4
