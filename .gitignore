@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+build/
+dist/
+# Model weights and exports (python -m huri_lips fetch / export-onnx)
+/models/
+*.onnx
+*.onnx.data

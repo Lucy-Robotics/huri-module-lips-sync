@@ -1,0 +1,10 @@
+# What the module is, readable without importing it (HuRI's startup check and
+# the hub use it). Keep it in step with the module class.
+name = "lips"
+summary = "Lip sync: ARKit blend shapes in step with the voice (LAM Audio2Expression), GPU or CPU"
+input = { topic = "huri.audio.out", event = "huri_events.audio:Audio" }
+output = { topic = "lips.face", event = "huri_events_lips:FaceWeights" }
+events = ["huri-events>=0.1,<0.3", "huri-events-lips>=0.1,<0.2"]
+# Runs on a CPU (onnxruntime or torch); a GPU (CUDA or ROCm) is faster.
+requires = { gpu = false, actuation = false }
+huri_core = ">=0.4,<0.5"

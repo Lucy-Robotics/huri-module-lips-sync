@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64,<82"]
+build-backend = "setuptools.build_meta"
+
+# The events the lips module introduces, as their own light distribution: a
+# client (HuRI-Playground, a robot face) installs this, not the module and its
+# model, to decode them.
+[project]
+name = "huri-events-lips"
+version = "0.1.0"
+description = "Events of the HuRI lips module: ARKit blend shape weights in step with the voice"
+requires-python = ">=3.10"
+dependencies = ["huri-core>=0.4,<0.5", "numpy>=1.26"]
+
+# Topic -> class, in this package's own namespace ("lips.").
+[project.entry-points."huri.events"]
+"lips.face" = "huri_events_lips:FaceWeights"
+
+[tool.setuptools.packages.find]
+include = ["huri_events_lips*"]

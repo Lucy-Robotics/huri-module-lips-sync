@@ -1,0 +1,10 @@
+# Exact pins for CPU-only machines (tested: 16-core x86, ~10x realtime with
+# the int8 ONNX export, see the README). torch is the CPU build: it only runs
+# the one-time ONNX export, or the model itself with HURI_LIPS_BACKEND=torch.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.8.0+cpu
+transformers==4.46.3
+onnx==1.22.0
+onnxruntime==1.31.1
+scipy==1.17.1
+numpy==1.26.4
