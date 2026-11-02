@@ -1,6 +1,5 @@
 # Exact pins for NVIDIA machines, in step with huri-modules' (CUDA 12.1
-# wheels). The model runs on the GPU with torch (HURI_LIPS_BACKEND=auto).
-# Not yet tested on NVIDIA hardware: see the README.
+# wheels).
 --extra-index-url https://download.pytorch.org/whl/cu121
 torch==2.3.1
 transformers==4.51.3

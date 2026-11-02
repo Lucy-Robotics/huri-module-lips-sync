@@ -15,10 +15,8 @@ dependencies = [
   # together with the module, from the same checkout or tag (see the README).
   "huri-events-lips>=0.1,<0.2",
   "numpy>=1.26",
-  "scipy>=1.11",                    # resampling, smoothing
-  "huggingface_hub>=0.23",          # downloads LAM's weights
-  # The model's backends: torch (GPU or CPU) and onnxruntime (CPU). Their
-  # hardware-specific builds are pinned in requirements-{cpu,nvidia,amd}.txt.
+  "scipy>=1.11",
+  "huggingface_hub>=0.23",
   "torch>=2.1",
   "transformers>=4.46",
   "onnx>=1.16",

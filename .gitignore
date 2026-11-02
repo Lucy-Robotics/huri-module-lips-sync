@@ -5,7 +5,6 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
-# Model weights and exports (python -m huri_lips fetch / export-onnx)
 /models/
 *.onnx
 *.onnx.data

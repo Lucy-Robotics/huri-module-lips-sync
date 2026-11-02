@@ -30,7 +30,6 @@ jobs:
           pip install \
             "huri-core[server] @ git+https://github.com/Lucy-Robotics/huri-core.git@${HURI_CORE_REF}" \
             "huri-events @ git+https://github.com/Lucy-Robotics/huri-modules.git@${HURI_MODULES_REF}#subdirectory=packages/huri-events"
-      # Packages only: the tests replace the model with fakes (no 373 MB download).
       - run: ./install.sh --variant cpu --no-models
       - name: style
         run: |
