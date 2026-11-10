@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=64,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "huri-module-lips-sync"
+version = "0.1.0"
+description = "HuRI module: lip sync, ARKit blend shapes from the voice (LAM Audio2Expression), on a GPU or a CPU"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "huri-core[server]>=0.4,<0.5",
+  "huri-events>=0.1,<0.3",
+  "huri-events-lips>=0.1,<0.2",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "huggingface_hub>=0.23",
+  "torch>=2.1",
+  "transformers>=4.46",
+  "onnx>=1.16",
+  "onnxruntime>=1.18",
+]
+
+[project.urls]
+Homepage = "https://github.com/Lucy-Robotics/huri-module-lips-sync"
+Repository = "https://github.com/Lucy-Robotics/huri-module-lips-sync"
+Issues = "https://github.com/Lucy-Robotics/huri-module-lips-sync/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "black>=24", "isort>=5", "flake8>=7", "flake8-pyproject>=1.2"]
+
+[project.entry-points."huri.modules"]
+lips = "huri_lips.module:Lips"
+tts_phonemes = "huri_lips.tts:PhonemeTTS"
+
+[tool.setuptools.packages.find]
+include = ["huri_lips*"]
+
+[tool.setuptools.package-data]
+huri_lips = ["huri_module.toml", "manifests/*/huri_module.toml"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["huri_lips", "huri_events_lips"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203"]
+exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist", "*.egg-info", "models"]
